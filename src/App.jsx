@@ -8,31 +8,26 @@ function tvDimensions(diagonal) {
   return { w, h }
 }
 
-const COLORS = [
-  '#4f8ef7', '#f76f4f', '#4fcf8e', '#f7c84f',
-  '#b44ff7', '#4fe8f7', '#f74fa0',
-]
-
-// Internal SVG units — treated as inches, scaled via viewBox
+const COLOR = '#4f8ef7'
 const PPU = 5.5
 
-function Visualization({ consoleWidthIn, consoleHeightIn, gapIn, selectedTVs }) {
-  const maxTVWidth = selectedTVs.reduce((max, size) => {
-    return Math.max(max, tvDimensions(size).w)
-  }, consoleWidthIn)
+function Visualization({ consoleWidthIn, consoleHeightIn, gapIn, tvSize }) {
+  const { w: tvW_in, h: tvH_in } = tvDimensions(tvSize)
 
-  const svgW = Math.max(maxTVWidth * PPU + 80, consoleWidthIn * PPU + 80)
+  const contentW = Math.max(tvW_in, consoleWidthIn) * PPU
+  const svgW = contentW + 80
   const tableW = consoleWidthIn * PPU
   const tableH = consoleHeightIn * PPU
   const gap = gapIn * PPU
+  const tvW = tvW_in * PPU
+  const tvH = tvH_in * PPU
 
-  const tallestTV = selectedTVs.reduce((max, size) => {
-    return Math.max(max, tvDimensions(size).h * PPU)
-  }, 0)
-
-  const svgH = tallestTV + gap + tableH + 56
+  const svgH = tvH + gap + tableH + 56
   const tableX = (svgW - tableW) / 2
   const tableY = svgH - tableH - 20
+  const tvX = (svgW - tvW) / 2
+  const tvY = tableY - gap - tvH
+  const bezel = 8
 
   return (
     <svg
@@ -49,7 +44,7 @@ function Visualization({ consoleWidthIn, consoleHeightIn, gapIn, selectedTVs }) 
       </text>
 
       {/* Gap indicator */}
-      {gapIn > 0 && selectedTVs.length > 0 && (
+      {gapIn > 0 && (
         <g>
           <line x1={tableX + tableW + 12} y1={tableY} x2={tableX + tableW + 12} y2={tableY - gap} stroke="#777" strokeWidth={1} strokeDasharray="3 3" />
           <line x1={tableX + tableW + 7} y1={tableY} x2={tableX + tableW + 17} y2={tableY} stroke="#777" strokeWidth={1} />
@@ -58,28 +53,15 @@ function Visualization({ consoleWidthIn, consoleHeightIn, gapIn, selectedTVs }) 
         </g>
       )}
 
-      {/* TVs */}
-      {selectedTVs.map((size, i) => {
-        const { w, h } = tvDimensions(size)
-        const tvW = w * PPU
-        const tvH = h * PPU
-        const bezel = 8
-        const tvX = (svgW - tvW) / 2
-        const tvY = tableY - gap - tvH
-        const color = COLORS[TV_SIZES.indexOf(size) % COLORS.length]
-        return (
-          <g key={size}>
-            <rect x={tvX} y={tvY} width={tvW} height={tvH} rx={6} fill={color} opacity={0.15} stroke={color} strokeWidth={2} />
-            <rect x={tvX + bezel} y={tvY + bezel} width={tvW - bezel * 2} height={tvH - bezel * 2} rx={2} fill={color} opacity={0.1} />
-            <text x={tvX + tvW / 2} y={tvY + tvH / 2 - 6} textAnchor="middle" fill={color} fontSize={14} fontWeight="bold" fontFamily="system-ui, sans-serif">
-              {size}"
-            </text>
-            <text x={tvX + tvW / 2} y={tvY + tvH / 2 + 10} textAnchor="middle" fill={color} fontSize={10} fontFamily="system-ui, sans-serif" opacity={0.75}>
-              {w.toFixed(1)}" × {h.toFixed(1)}"
-            </text>
-          </g>
-        )
-      })}
+      {/* TV */}
+      <rect x={tvX} y={tvY} width={tvW} height={tvH} rx={6} fill={COLOR} opacity={0.15} stroke={COLOR} strokeWidth={2} />
+      <rect x={tvX + bezel} y={tvY + bezel} width={tvW - bezel * 2} height={tvH - bezel * 2} rx={2} fill={COLOR} opacity={0.1} />
+      <text x={tvX + tvW / 2} y={tvY + tvH / 2 - 7} textAnchor="middle" fill={COLOR} fontSize={16} fontWeight="bold" fontFamily="system-ui, sans-serif">
+        {tvSize}"
+      </text>
+      <text x={tvX + tvW / 2} y={tvY + tvH / 2 + 11} textAnchor="middle" fill={COLOR} fontSize={11} fontFamily="system-ui, sans-serif" opacity={0.75}>
+        {tvW_in.toFixed(1)}" × {tvH_in.toFixed(1)}"
+      </text>
     </svg>
   )
 }
@@ -112,15 +94,7 @@ export default function App() {
   const [consoleWidth, setConsoleWidth] = useState(60)
   const [consoleHeight, setConsoleHeight] = useState(18)
   const [gap, setGap] = useState(4)
-  const [selectedTVs, setSelectedTVs] = useState([55, 65])
-
-  function toggleTV(size) {
-    setSelectedTVs(prev =>
-      prev.includes(size)
-        ? prev.filter(s => s !== size)
-        : [...prev, size].sort((a, b) => a - b)
-    )
-  }
+  const [selectedTV, setSelectedTV] = useState(55)
 
   return (
     <div className="app">
@@ -130,40 +104,34 @@ export default function App() {
       </header>
 
       <div className="app-body">
-        {/* Visualization — shown first on mobile */}
+        {/* Visualization — fixed, does not scroll */}
         <main className="viz-area">
-          {selectedTVs.length === 0 ? (
-            <div className="viz-empty">
-              <span className="viz-empty-icon">📺</span>
-              Select a TV size below to compare
-            </div>
-          ) : (
-            <Visualization
-              consoleWidthIn={consoleWidth}
-              consoleHeightIn={consoleHeight}
-              gapIn={gap}
-              selectedTVs={selectedTVs}
-            />
-          )}
+          <Visualization
+            consoleWidthIn={consoleWidth}
+            consoleHeightIn={consoleHeight}
+            gapIn={gap}
+            tvSize={selectedTV}
+          />
         </main>
 
-        {/* Controls — below visualization on mobile, sidebar on desktop */}
+        {/* Controls — only scrollable region */}
         <aside className="controls">
           <section className="controls-section">
-            <h2>TV Sizes</h2>
-            <div className="tv-buttons">
+            <h2>TV Size</h2>
+            <div className="tv-buttons" role="radiogroup" aria-label="TV size">
               {TV_SIZES.map(size => {
-                const active = selectedTVs.includes(size)
-                const color = COLORS[TV_SIZES.indexOf(size) % COLORS.length]
+                const active = selectedTV === size
                 return (
                   <button
                     key={size}
                     className="tv-btn"
-                    onClick={() => toggleTV(size)}
+                    role="radio"
+                    aria-checked={active}
+                    onClick={() => setSelectedTV(size)}
                     style={{
-                      borderColor: active ? color : undefined,
-                      background: active ? `${color}22` : undefined,
-                      color: active ? color : undefined,
+                      borderColor: active ? COLOR : undefined,
+                      background: active ? `${COLOR}22` : undefined,
+                      color: active ? COLOR : undefined,
                       fontWeight: active ? 700 : undefined,
                     }}
                   >
@@ -184,24 +152,6 @@ export default function App() {
             <h2>Gap Above Table</h2>
             <Slider label="Height gap" value={gap} min={0} max={24} unit='"' onChange={setGap} />
           </section>
-
-          {selectedTVs.length > 0 && (
-            <section className="controls-section">
-              <h2>Selected TVs</h2>
-              <div className="legend">
-                {selectedTVs.map(size => {
-                  const { w, h } = tvDimensions(size)
-                  const color = COLORS[TV_SIZES.indexOf(size) % COLORS.length]
-                  return (
-                    <div key={size} className="legend-item">
-                      <div className="legend-dot" style={{ background: color }} />
-                      <span><strong style={{ color }}>{size}"</strong> — {w.toFixed(1)}" × {h.toFixed(1)}"</span>
-                    </div>
-                  )
-                })}
-              </div>
-            </section>
-          )}
         </aside>
       </div>
     </div>
