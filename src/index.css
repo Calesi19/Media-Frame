@@ -6,6 +6,7 @@ html, body, #root {
   margin: 0;
   padding: 0;
   height: 100%;
+  overflow: hidden;
 }
 
 body {
@@ -18,45 +19,34 @@ body {
 /* ── Layout ─────────────────────────────────────────── */
 
 .app {
-  min-height: 100dvh;
+  height: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
-.app-header {
-  padding: 16px 16px 12px;
-  border-bottom: 1px solid #2a2a2a;
-  flex-shrink: 0;
-}
-
-.app-header h1 {
-  margin: 0;
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: -0.3px;
-}
-
-.app-header p {
-  margin: 3px 0 0;
-  font-size: 13px;
-  color: #777;
-}
 
 /* Mobile: visualization on top, controls below */
 .app-body {
   display: flex;
   flex-direction: column;
   flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
 }
 
 .viz-area {
-  padding: 20px 12px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
+  padding: 12px;
+  flex: 1;
+  min-height: 0;
+  min-width: 0;
+  overflow: hidden;
   display: flex;
-  align-items: flex-start;
+  align-items: center;
   justify-content: center;
-  min-height: 240px;
 }
 
 .viz-empty {
@@ -64,36 +54,58 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   color: #555;
-  font-size: 14px;
-  min-height: 200px;
+  font-size: 13px;
   width: 100%;
+  height: 100%;
 }
 
 .viz-empty-icon {
-  font-size: 36px;
+  font-size: 32px;
 }
 
-/* SVG scales to its container */
+/* SVG scales to its container, constrained by BOTH width and height */
 .viz-svg {
   display: block;
   width: 100%;
-  height: auto;
-  max-width: 700px;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
   margin: 0 auto;
 }
 
 .controls {
   border-top: 1px solid #2a2a2a;
-  padding: 20px 16px;
+  padding: 10px 14px;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 10px;
+  flex-shrink: 0;
+  max-height: 50dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.controls::-webkit-scrollbar {
+  width: 5px;
+}
+
+.controls::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.controls::-webkit-scrollbar-thumb {
+  background: #333;
+  border-radius: 3px;
+}
+
+.controls::-webkit-scrollbar-thumb:hover {
+  background: #444;
 }
 
 .controls-section h2 {
-  margin: 0 0 12px;
+  margin: 0 0 6px;
   font-size: 11px;
   font-weight: 600;
   color: #666;
@@ -101,22 +113,34 @@ body {
   letter-spacing: 0.08em;
 }
 
+.controls-sliders-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.sliders-inline {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
 /* ── TV size toggle buttons ─────────────────────────── */
 
 .tv-buttons {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
+  gap: 6px;
 }
 
 .tv-btn {
-  padding: 8px 14px;
-  min-height: 40px;
-  border-radius: 8px;
+  padding: 6px 11px;
+  min-height: 34px;
+  border-radius: 6px;
   border: 2px solid #444;
   background: transparent;
   color: #888;
-  font-size: 14px;
+  font-size: 13px;
   font-family: inherit;
   font-weight: 400;
   cursor: pointer;
@@ -127,10 +151,6 @@ body {
 /* ── Sliders ─────────────────────────────────────────── */
 
 .slider-row {
-  margin-bottom: 18px;
-}
-
-.slider-row:last-child {
   margin-bottom: 0;
 }
 
@@ -138,16 +158,16 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
 
 .slider-label {
-  font-size: 14px;
+  font-size: 13px;
   color: #ccc;
 }
 
 .slider-value {
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 700;
   color: #fff;
   font-variant-numeric: tabular-nums;
@@ -158,18 +178,19 @@ body {
   -webkit-appearance: none;
   appearance: none;
   width: 100%;
-  height: 6px;
+  height: 5px;
   border-radius: 3px;
   background: #333;
   outline: none;
   cursor: pointer;
   accent-color: #4f8ef7;
+  display: block;
 }
 
 .slider-input::-webkit-slider-thumb {
   -webkit-appearance: none;
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: #4f8ef7;
   cursor: pointer;
@@ -178,8 +199,8 @@ body {
 }
 
 .slider-input::-moz-range-thumb {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
   border-radius: 50%;
   background: #4f8ef7;
   cursor: pointer;
@@ -199,20 +220,20 @@ body {
 .legend {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 20px;
+  gap: 6px 14px;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
-  gap: 7px;
-  font-size: 12px;
+  gap: 6px;
+  font-size: 11px;
   color: #bbb;
 }
 
 .legend-dot {
-  width: 10px;
-  height: 10px;
+  width: 9px;
+  height: 9px;
   border-radius: 2px;
   flex-shrink: 0;
 }
@@ -220,41 +241,63 @@ body {
 /* ── Desktop layout (≥ 640px) ────────────────────────── */
 
 @media (min-width: 640px) {
-  .app-header {
-    padding: 20px 24px 14px;
-  }
-
-  .app-header h1 {
-    font-size: 20px;
-  }
 
   .app-body {
     flex-direction: row;
     flex: 1;
+    min-height: 0;
+    min-width: 0;
     overflow: hidden;
   }
 
   .controls {
     width: 260px;
-    min-width: 220px;
+    min-width: 240px;
+    max-width: 280px;
     flex-shrink: 0;
     border-top: none;
     border-right: 1px solid #2a2a2a;
-    padding: 24px 20px;
+    padding: 20px 18px;
     overflow-y: auto;
+    max-height: none;
     order: -1;
+    gap: 20px;
+  }
+
+  .controls-section h2 {
+    margin: 0 0 10px;
+  }
+
+  .controls-sliders-group {
+    gap: 20px;
+  }
+
+  .sliders-inline {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+  }
+
+  .sliders-inline-sections {
+    gap: 20px;
   }
 
   .viz-area {
     flex: 1;
-    padding: 32px;
-    overflow: auto;
+    padding: 24px 32px;
+    overflow: hidden;
     align-items: center;
+    justify-content: center;
   }
 
   .viz-svg {
-    max-width: none;
+    max-width: 100%;
+    max-height: 100%;
     width: 100%;
-    height: auto;
+    height: 100%;
+  }
+
+  .legend-item {
+    font-size: 12px;
   }
 }
